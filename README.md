@@ -13,7 +13,6 @@ Aplikasi Node.js ini memungkinkan pengguna untuk menginput data siswa melalui fo
 - **Express.js**: Framework web.
 - **Google Sheets API**: Untuk integrasi dengan Google Sheets.
 - **Google Drive API**: Untuk penyimpanan foto.
-- **HTML5 & JavaScript**: Untuk formulir input dan pengambilan foto.
 
 ## Prasyarat
 Sebelum memulai, pastikan Anda memiliki:
@@ -61,12 +60,12 @@ project-name/
 ├── cache
 ├── config
     └── credentials.json  # File kredensial Google API
-├── index.js          # File utama aplikasi Node.js
-├── public/           # File statis (HTML, CSS, JavaScript)
+├── index.js              # File utama aplikasi Node.js
+├── public/               # File statis (HTML, CSS, JavaScript)
 ├── views/           
-    └── index.ejs     # File statis
-├── package.json      # File konfigurasi npm
-└── README.md         # Dokumentasi proyek
+    └── index.ejs         # File statis
+├── package.json          # File konfigurasi npm
+└── README.md             # Dokumentasi proyek
 ```
 
 ## Dependensi Utama
