@@ -1,0 +1,24 @@
+{
+  "name": "form-kamera-drive",
+  "version": "1.0.0",
+  "description": "Aplikasi form dengan kamera yang terintegrasi dengan Google Drive dan Sheets",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "build:css": "tailwindcss -i ./public/styles.css -o ./public/output.css --watch"
+  },
+  "dependencies": {
+    "autoprefixer": "^10.4.20",
+    "dotenv": "^16.0.3",
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "googleapis": "^118.0.0",
+    "multer": "^1.4.5-lts.1",
+    "postcss": "^8.5.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22",
+    "tailwindcss": "^3.4.17"
+  }
+}

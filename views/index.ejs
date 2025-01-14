@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Input dengan Kamera</title>
+    <link href="/output.css" rel="stylesheet">
+    <style>
+        #video {
+            width: 100%;
+            max-width: 1024px;
+        }
+        #canvas {
+            display: none;
+        }
+        #preview {
+            width: 100%;
+            max-width: 1366px;
+            right: 0px;
+        }
+        .autocomplete-item {
+            padding: 10px;
+            cursor: pointer;
+            background-color: #fff;
+        }
+        .autocomplete-item:hover {
+            background-color: #e9e9e9;
+        } 
+        </style>
+</head>
+<body>
+    <div class="relative overflow-hidden bg-white">
+        <div class="pb-80 pt-16 sm:pb-40 sm:pt-24 lg:pb-48 lg:pt-40">
+          <div class="relative mx-auto max-w-7xl px-4 sm:static sm:px-6 lg:px-8">
+            <div class="sm:max-w-lg">
+              <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">Form Input Nama dan Foto Siswa</h1>
+              <p class="mt-4 text-xl text-gray-500">This year, our new collection will shelter you from the harsh elements of a world that doesn't care if you live or die.</p>
+              <div class="mt-2">
+              <label for="name" class="block text-sm/6 font-medium text-gray-900">Nama Lengkap</label>
+            <input type="text" id="name" name="name" placeholder="Pilih Nama" required autocomplete="off" class="block w-full rounded-md bg-white px-3.5 py-2 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600">
+            <div id="autocomplete-list" class="bg-white border-gray-300 absolute z-auto w-100"></div>
+            </div>
+            </div>
+            <div>
+              <div class="mt-10">
+                <form id="uploadForm">
+                <!-- Decorative image grid -->
+                <div aria-hidden="true" class="pointer-events-none lg:absolute lg:inset-y-0 lg:mx-auto lg:w-full lg:max-w-7xl">
+                  <div class="absolute transform sm:top-0 sm:translate-x-8 lg:left-1/2 lg:top-1/2 lg:-translate-y-1/2 lg:translate-x-8">
+                    <div class="flex items-center space-x-6 lg:space-x-8">
+                      <div class="grid shrink-0 grid-cols-1 gap-y-6 lg:gap-y-8">
+                        <div class="overflow-hidden rounded-lg border-gray-300">
+                          <video id="video" autoplay class="w-full max-w-lg"></video>
+                          <canvas id="canvas" class="hidden"></canvas>
+                          <!-- <img src="https://tailwindui.com/plus/img/ecommerce-images/home-page-03-hero-image-tile-04.jpg" alt="" class="size-full object-cover"> -->
+                        </div>
+                      </div>
+                      <img id="preview" src="" alt="" class="rounded-xl fixed"/>
+                    </div>
+                  </div>
+                </div>
+                
+                <button type="submit" class="inline-block rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-center font-medium text-white hover:bg-indigo-700">Save</button>
+                <button type="button" id="capture" class="inline-block rounded-md border border-transparent bg-green-500 px-8 py-3 text-center font-medium text-white hover:bg-green-700">Capture</button>
+              </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    <script>
+        const input = document.getElementById('name');
+        const autocompleteList = document.getElementById('autocomplete-list');
+
+        // Ambil daftar nama dari server
+        fetch('/api/names')
+            .then(response => response.json())
+            .then(names => {
+                // Fungsi untuk menampilkan autocomplete
+                input.addEventListener('input', function() {
+                    const value = this.value;
+                    autocompleteList.innerHTML = ''; // Kosongkan daftar sebelumnya
+
+                    if (!value) return; // Jika input kosong, keluar
+
+                    names.forEach(name => {
+                        if (name.toLowerCase().includes(value.toLowerCase())) {
+                            const item = document.createElement('div');
+                            item.classList.add('autocomplete-item');
+                            item.innerHTML = name;
+                            item.addEventListener('click', function() {
+                                input.value = name; // Set input ke nama yang dipilih
+                                autocompleteList.innerHTML = ''; // Kosongkan daftar
+                            });
+                            autocompleteList.appendChild(item);
+                        }
+                    });
+                });
+
+                // Menutup daftar autocomplete jika pengguna mengklik di luar
+                document.addEventListener('click', function(e) {
+                    if (e.target !== input) {
+                        autocompleteList.innerHTML = '';
+                    }
+                });
+            })
+            .catch(error => console.error('Error fetching names:', error));
+
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const captureButton = document.getElementById('capture');
+        const preview = document.getElementById('preview');
+        let photoTaken = false;
+
+        // Akses kamera
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+            } catch (err) {
+                console.error('Error:', err);
+            }
+        }
+
+        startCamera();
+
+        // Ambil foto
+        captureButton.addEventListener('click', () => {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            photoTaken = true;
+
+            // Tampilkan preview foto
+            const dataURL = canvas.toDataURL('image/jpeg');
+            preview.src = dataURL;
+        });
+
+        // Handle submit form
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!photoTaken) {
+                alert('Silakan ambil foto terlebih dahulu!');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('name', input.value);
+
+            // Convert canvas to blob
+            canvas.toBlob(async (blob) => {
+                formData.append('photo', blob, 'photo.jpg');
+
+                try {
+                    const response = await fetch('/submit', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('Data berhasil disimpan!');
+                        location.reload();
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan!');
+                }
+            }, 'image/jpeg');
+        });
+    </script>
+</body>
+</html> 
